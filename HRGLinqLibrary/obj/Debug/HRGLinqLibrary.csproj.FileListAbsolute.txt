@@ -1,0 +1,4 @@
+E:\code\222\HRGLinqLibraryProj\HRGLinqLibrary\bin\Debug\HRGLinqLibrary.dll
+E:\code\222\HRGLinqLibraryProj\HRGLinqLibrary\bin\Debug\HRGLinqLibrary.pdb
+E:\code\222\HRGLinqLibraryProj\HRGLinqLibrary\obj\Debug\HRGLinqLibrary.dll
+E:\code\222\HRGLinqLibraryProj\HRGLinqLibrary\obj\Debug\HRGLinqLibrary.pdb
