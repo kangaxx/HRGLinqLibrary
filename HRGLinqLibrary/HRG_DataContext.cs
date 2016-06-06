@@ -152,57 +152,105 @@ namespace HRG_LinqLibrary
             command.CommandText = queryString;
 
             OleDbDataReader reader = command.ExecuteReader();
+
+            if (!reader.HasRows)
+                return ""; //一条数据都没有直接返回空字符串
+            DynDBHelper dynDb = new DynDBHelper();
+            while (reader.Read())
+            {
+                List<FieldUnit> row = new List<FieldUnit>();
+                for (int i = 0; i < reader.FieldCount; i++)
+                {
+                    FieldUnit unitTemp = new FieldUnit();
+                    unitTemp.FieldName = reader.GetName(i);
+                    unitTemp.FieldValue = reader[i].ToString();
+                    row.Add(unitTemp);
+                }
+                dynDb.addRow(row);
+            }
+            string json = CommonFunction.ToJson(dynDb.getDataList());
+            return json;
         }
 
+
+        private string GetProcText(string procName)
+        {
+            //创建数据库命令,通过procName取出实际的proc命令
+            OleDbCommand command = _conn.CreateCommand();
+
+            command.CommandText = String.Format("select QueryProcText from ProcList where ProcName = '{0}'", procName);
+            //从数据库中读取数据流存入reader中
+            OleDbDataReader reader = command.ExecuteReader();
+            if (!reader.HasRows)
+                return ""; //一条数据都没有直接返回空字符串
+            if (reader.Read())
+            {
+                return reader.GetValue(0).ToString();
+            }
+            else
+                return "";
+        }
+
+
         //无参形式的存储过程，一般来说应该是查询存储过程
-    //    public string QueryProc(string procName)
-    //    {
-    //        try
-    //        {
-    //            if (procName.IndexOf("SEARCH") < 0)
-    //                throw new Exception("ERROR, QueryProc name invalid!");
+        public string QueryProc(string procName)
+        {
+            try
+            {
+                if (procName.IndexOf("SEARCH") < 0)
+                    throw new Exception("ERROR, QueryProc name invalid!");
 
-    //            #region 读取数据
-    //            //创建数据库命令  
-    //            MySqlCommand cmd = _conn.CreateCommand();
-    //            //创建查询语句  
-    //            cmd.CommandText = procName;
-    //            cmd.CommandType = CommandType.StoredProcedure;
-    //            cmd.Parameters.Clear();
-    //            //从数据库中读取数据流存入reader中  
-    //            MySqlDataReader reader = cmd.ExecuteReader();
+                #region 读取数据
+                //创建数据库命令,通过procName取出实际的proc命令
+                OleDbCommand command = _conn.CreateCommand();
 
-    //            //从reader中读取下一行数据,如果没有数据,reader.Read()返回flase  
+                command.CommandText = GetProcText(procName);
+                //从数据库中读取数据流存入reader中
+                OleDbDataReader reader = command.ExecuteReader();
 
-    //            if (!reader.HasRows)
-    //                return ""; //一条数据都没有直接返回空字符串
-    //            DynDBHelper dynDb = new DynDBHelper();
-    //            while (reader.Read())
-    //            {
-    //                List<FieldUnit> row = new List<FieldUnit>();
-    //                for (int i = 0; i < reader.FieldCount; i++)
-    //                {
-    //                    FieldUnit unitTemp = new FieldUnit();
-    //                    unitTemp.FieldName = reader.GetName(i);
-    //                    unitTemp.FieldValue = reader[i].ToString();
-    //                    row.Add(unitTemp);
-    //                }
-    //                dynDb.addRow(row);
-    //            }
 
-    //            string json = CommonFunction.ToJson(dynDb.getDataList());
-    //            return json;
-    //            #endregion
-    //        }
-    //        catch
-    //        {
-    //            throw new Exception(String.Format("ERROR, Mysql DataContext error while do QueryProc: {0}", procName));
-    //        }
-    //        finally
-    //        {
-    //            //do nothing yet
-    //        }
-    //    }
+
+                //从reader中读取下一行数据,如果没有数据,reader.Read()返回flase  
+
+                if (!reader.HasRows)
+                    return ""; //一条数据都没有直接返回空字符串
+                DynDBHelper dynDb = new DynDBHelper();
+                while (reader.Read())
+                {
+                    List<FieldUnit> row = new List<FieldUnit>();
+                    for (int i = 0; i < reader.FieldCount; i++)
+                    {
+                        FieldUnit unitTemp = new FieldUnit();
+                        unitTemp.FieldName = reader.GetName(i);
+                        unitTemp.FieldValue = reader[i].ToString();
+                        row.Add(unitTemp);
+                    }
+                    dynDb.addRow(row);
+                }
+
+                string json = CommonFunction.ToJson(dynDb.getDataList());
+                return json;
+                #endregion
+            }
+            catch
+            {
+                throw new Exception(String.Format("ERROR, Mysql DataContext error while do QueryProc: {0}", procName));
+            }
+            finally
+            {
+                //do nothing yet
+            }
+        }
+
+        public string Query(object queryObj)
+        {
+            throw new Exception("ERROR,Query not finished!");
+        }
+
+        public string QueryProc(string procName, string argumentJson)
+        {
+            throw new Exception("ERROR, QueryProc not finished!");
+        }
 
         private OleDbConnection _conn;
     }

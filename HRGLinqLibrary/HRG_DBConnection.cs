@@ -39,11 +39,22 @@ namespace HRG_LinqLibrary
             _conn.Open();
         }
 
+
+        private string GetConfigStringByName(string name)
+        {
+
+
+
+        }
+
+
         public HRG_DBFactory(string configFile)
         {
+            ConfigXmlDocument doc = new ConfigXmlDocument();
             throw new Exception(String.Format("Error , HRG_DBConnection open by file {0} , function not finished yet!"));
         }
 
+        
 
         public HRG_IDataContext getDC()
         {
@@ -54,7 +65,7 @@ namespace HRG_LinqLibrary
             }
             else if (_conn.GetType() == typeof(OleDbConnection))
             {
-                result = new HRG_OleDBContext(_conn));
+                result = new HRG_OleDBContext(_conn);
             }
             else
             {
