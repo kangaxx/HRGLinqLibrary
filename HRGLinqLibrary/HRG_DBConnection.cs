@@ -22,6 +22,8 @@ using System.Threading.Tasks;
 using MySql.Data;
 using MySql.Data.MySqlClient;
 using System.Data.OleDb;
+using HRG_BaseLibrary_2012;
+using System.IO;
 
 namespace HRG_LinqLibrary
 {
@@ -29,7 +31,7 @@ namespace HRG_LinqLibrary
     //虚拟工厂模式的数据库工厂类，根据传入的参数决定链接那个数据库
     public class HRG_DBFactory : IDisposable
     {
-        public HRG_DBFactory(IDbConnection  conn)
+        public HRG_DBFactory(IDbConnection conn)
         {
             if (!(conn.State == ConnectionState.Closed || conn.State == ConnectionState.Broken))
             {
@@ -39,19 +41,42 @@ namespace HRG_LinqLibrary
             _conn.Open();
         }
 
-
-        private string GetConfigStringByName(string name)
+        private IDbConnection GetDatabaseConn(string configuration)
         {
+            string type = CommonFunction.GetSettingValueByName(configuration, GlobalVariables.STRING_SQLTYPE_FLAG, new char[] { ';' });
+            if (type == GlobalVariables.STRING_SQLTYPE_NAME_MYSQL)
+            {
+                return new MySqlConnection(String.Format("server={0};user id={1};password={2};database={3}",
+                    CommonFunction.GetSettingValueByName(configuration, GlobalVariables.STRING_SQL_CONNECTION_TAG_SERVER, new char[] { ';' }),
+                    CommonFunction.GetSettingValueByName(configuration, GlobalVariables.STRING_SQL_CONNECTION_TAG_USER, new char[] { ';' }),
+                    CommonFunction.GetSettingValueByName(configuration, GlobalVariables.STRING_SQL_CONNECTION_TAG_PASSWORD, new char[] { ';' }),
+                    CommonFunction.GetSettingValueByName(configuration, GlobalVariables.STRING_SQL_CONNECTION_TAG_DATABASE, new char[] { ';' })
+                    ));
 
-
+            }
+            else if (type == GlobalVariables.STRING_SQLTYPE_NAME_OLEDB)
+            {
+                return new OleDbConnection(String.Format("Provider={0};Data Source={1}",
+                    CommonFunction.GetSettingValueByName(configuration, GlobalVariables.STRING_SQL_CONNECTION_TAG_PROVIDER, new char[] { ';' }),
+                    CommonFunction.GetSettingValueByName(configuration, GlobalVariables.STRING_SQL_CONNECTION_TAG_DATASOURCE, new char[] { ';' })
+                    ));
+            }
+            else
+            {
+                throw new Exception(String.Format("Error, get an unknow database type : [{0}]",type));
+            }
 
         }
 
 
         public HRG_DBFactory(string configFile)
         {
-            ConfigXmlDocument doc = new ConfigXmlDocument();
-            throw new Exception(String.Format("Error , HRG_DBConnection open by file {0} , function not finished yet!"));
+            FileStream fs = new FileStream(configFile, FileMode.Open);
+            StreamReader sr = new StreamReader(fs);
+            string configuration = sr.ReadToEnd();
+            _conn = GetDatabaseConn(configuration);
+            _conn.Open();
+            fs.Close();
         }
 
         
@@ -72,6 +97,11 @@ namespace HRG_LinqLibrary
                 result = null;
             }
             return result;
+        }
+
+        public IDbConnection getConn()
+        {
+            return _conn;
         }
 
         public void Dispose()

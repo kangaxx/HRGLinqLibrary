@@ -24,6 +24,7 @@ using MySql.Data;
 using MySql.Data.MySqlClient;
 using System.Data.OleDb;
 
+
 namespace HRG_LinqLibrary
 {
     ////查询条件
@@ -44,6 +45,10 @@ namespace HRG_LinqLibrary
     {
         string Query(string queryString);
         string Query(object queryObj);
+        IDataReader obj_Query(string queryString);
+        string Delete(string deleteString);
+        string Update(string updateString);
+        string Insert(string insertString);
         string QueryProc(string procName, string argumentJson);
         string QueryProc(string procName);
     }
@@ -61,6 +66,37 @@ namespace HRG_LinqLibrary
             _conn = (MySqlConnection)conn;
         }
 
+        public IDataReader obj_Query(string queryString)
+        {
+            try
+            {
+
+                #region 读取数据
+                //创建数据库命令  
+                MySqlCommand cmd = _conn.CreateCommand();
+                //创建查询语句  
+                cmd.CommandText = queryString;
+                cmd.CommandType = CommandType.Text;
+                //从数据库中读取数据流存入reader中  
+                MySqlDataReader reader = cmd.ExecuteReader();
+
+                //从reader中读取下一行数据,如果没有数据,reader.Read()返回flase  
+
+                if (!reader.HasRows)
+                    return null; //一条数据都没有直接返回空字符串
+                return reader;
+                #endregion
+            }
+            catch
+            {
+                throw new Exception(String.Format("ERROR, Mysql DataContext error while do QueryProc: {0}", queryString));
+            }
+            finally
+            {
+                //do nothing yet
+            }
+        }
+
         public string Query(string queryString)
         {
             throw new Exception("ERROR,Query not finished!");
@@ -74,6 +110,22 @@ namespace HRG_LinqLibrary
         public string QueryProc(string procName, string argumentJson)
         {
             throw new Exception("ERROR, QueryProc not finished!");
+        }
+
+        public string Delete(string deleteString)
+        {
+            throw new Exception("ERROR, Delete not finished!");
+        }
+
+        public string Update(string deleteString)
+        {
+            throw new Exception("ERROR, Update not finished!");
+        }
+
+        public string Insert(string insertString)
+        {
+            throw new Exception("ERROR, Insert not finished!");
+
         }
 
         //无参形式的存储过程，一般来说应该是查询存储过程
@@ -172,6 +224,22 @@ namespace HRG_LinqLibrary
             return json;
         }
 
+        //执行select查询语句,直接返回reader对象
+        public IDataReader obj_Query(string queryString)
+        {
+
+            OleDbCommand command = _conn.CreateCommand();
+
+            command.CommandText = queryString;
+
+            OleDbDataReader reader = command.ExecuteReader();
+
+            if (!reader.HasRows)
+                return null; //一条数据都没有直接返回空字符串
+            else
+                return reader;
+
+        }
 
         private string GetProcText(string procName)
         {
@@ -252,6 +320,22 @@ namespace HRG_LinqLibrary
             throw new Exception("ERROR, QueryProc not finished!");
         }
 
+
+        public string Delete(string deleteString)
+        {
+            throw new Exception("ERROR, Delete not finished!");
+        }
+
+        public string Update(string deleteString)
+        {
+            throw new Exception("ERROR, Update not finished!");
+        }
+
+        public string Insert(string insertString)
+        {
+            throw new Exception("ERROR, Insert not finished!");
+
+        }
         private OleDbConnection _conn;
     }
     #endregion
