@@ -46,17 +46,26 @@ namespace HRG_LinqLibrary
         string Query(string queryString);
         string Query(object queryObj);
         IDataReader obj_Query(string queryString);
-        string Delete(string deleteString);
-        string Update(string updateString);
-        string Insert(string insertString);
+        int Delete(string deleteString);
+        int Update(string updateString);
+        int Insert(string insertString);
         string QueryProc(string procName, string argumentJson);
         string QueryProc(string procName);
+    }
+
+    //json转到实体类，json内确保有'name'和'value'字符串
+    class Proc_Argument
+    {
+        public string name = "";
+        public string value = "";
+        public int direct = 1; //存储过程参数类型 1 输入 2 输出 3 返回值
     }
 
     //mysql功能实现
     #region mysql datacontext
     public class HRG_MysqlDataContext : HRG_IDataContext
     {
+
         public HRG_MysqlDataContext(IDbConnection conn)
         {
             if (conn.State != ConnectionState.Open)
@@ -109,32 +118,12 @@ namespace HRG_LinqLibrary
 
         public string QueryProc(string procName, string argumentJson)
         {
-            throw new Exception("ERROR, QueryProc not finished!");
-        }
-
-        public string Delete(string deleteString)
-        {
-            throw new Exception("ERROR, Delete not finished!");
-        }
-
-        public string Update(string deleteString)
-        {
-            throw new Exception("ERROR, Update not finished!");
-        }
-
-        public string Insert(string insertString)
-        {
-            throw new Exception("ERROR, Insert not finished!");
-
-        }
-
-        //无参形式的存储过程，一般来说应该是查询存储过程
-        public string QueryProc(string procName)
-        {
             try
             {
                 if (procName.IndexOf("SEARCH") < 0)
                     throw new Exception("ERROR, QueryProc name invalid!");
+
+
 
                 #region 读取数据
                 //创建数据库命令  
@@ -142,7 +131,30 @@ namespace HRG_LinqLibrary
                 //创建查询语句  
                 cmd.CommandText = procName;
                 cmd.CommandType = CommandType.StoredProcedure;
-                cmd.Parameters.Clear();  
+                cmd.Parameters.Clear();
+                //组织存储过程参数,目前只支持输入型参数，输出及return稍后添加
+                if (argumentJson.Trim() != "")
+                {
+                    List<Proc_Argument> args = CommonFunction.DeserializeJsonToList<Proc_Argument>(argumentJson);
+                    foreach (Proc_Argument arg in args)
+                    {
+                        Console.Write(String.Format("name is {0}, value is {1}, direct is {2}", arg.name, arg.value, arg.direct));
+                        MySqlParameter paramTemp = new MySqlParameter(arg.name, arg.value);
+                        if (arg.direct == GlobalVariables.INT_SQL_PARAM_DIRECTION_INPUT)
+                        {
+                            paramTemp.Direction = ParameterDirection.Input;
+                        }
+                        else if (arg.direct == GlobalVariables.INT_SQL_PARAM_DIRECTION_OUTPUT)
+                        {
+                            paramTemp.Direction = ParameterDirection.Output;
+                        }
+                        else if (arg.direct == GlobalVariables.INT_SQL_PARAM_DIRECTION_RETURN)
+                        {
+                            paramTemp.Direction = ParameterDirection.ReturnValue;
+                        }
+                        cmd.Parameters.Add(paramTemp);
+                    }
+                }
                 //从数据库中读取数据流存入reader中  
                 MySqlDataReader reader = cmd.ExecuteReader();
 
@@ -176,6 +188,84 @@ namespace HRG_LinqLibrary
             {
                 //do nothing yet
             }
+        }
+
+        public int Delete(string deleteString)
+        {
+            try
+            {
+                MySqlCommand cmd = _conn.CreateCommand();
+                cmd.CommandText = deleteString;
+                cmd.CommandType = CommandType.Text;
+                cmd.Parameters.Clear();
+                return cmd.ExecuteNonQuery();
+
+            }
+            catch
+            {
+
+                throw new Exception(String.Format("ERROR, Mysql delete error while do command: {0}", deleteString));
+            }
+            finally
+            {
+                //do nothing yet;
+
+            }
+        }
+
+        public int Update(string updateString)
+        {
+            try
+            {
+                MySqlCommand cmd = _conn.CreateCommand();
+                cmd.CommandText = updateString;
+                cmd.CommandType = CommandType.Text;
+                cmd.Parameters.Clear();
+                return cmd.ExecuteNonQuery();
+
+            }
+            catch
+            {
+
+                throw new Exception(String.Format("ERROR, Mysql update error while do command: {0}", updateString));
+            }
+            finally
+            {
+                //do nothing yet;
+
+            }
+        }
+
+
+        //执行插入语句，成功返回插入条数（0表示成功插入0条），失败返回-1
+        public int Insert(string insertString)
+        {
+            try
+            {
+                MySqlCommand cmd = _conn.CreateCommand();
+                cmd.CommandText = insertString;
+                cmd.CommandType = CommandType.Text;
+                cmd.Parameters.Clear();
+                return cmd.ExecuteNonQuery();
+
+            }
+            catch
+            {
+
+                throw new Exception(String.Format("ERROR, Mysql insert error while do command: {0}", insertString));
+            }
+            finally
+            {
+                //do nothing yet;
+
+            }
+
+        }
+
+        //无参形式的存储过程，一般来说应该是查询存储过程
+        public string QueryProc(string procName)
+        {
+            return QueryProc(procName, "");
         }
 
         private MySqlConnection _conn;
@@ -241,7 +331,7 @@ namespace HRG_LinqLibrary
 
         }
 
-        private string GetProcText(string procName)
+        private string GetProcText(string procName, string argumentJson)
         {
             //创建数据库命令,通过procName取出实际的proc命令
             OleDbCommand command = _conn.CreateCommand();
@@ -253,7 +343,16 @@ namespace HRG_LinqLibrary
                 return ""; //一条数据都没有直接返回空字符串
             if (reader.Read())
             {
-                return reader.GetValue(0).ToString();
+                string result = reader.GetValue(0).ToString();
+                if (argumentJson.Trim() != "")
+                {
+                    List<Proc_Argument> args = CommonFunction.DeserializeJsonToList<Proc_Argument>(argumentJson);
+                    foreach (Proc_Argument arg in args)
+                    {
+                        result = result.Replace(arg.name, arg.value);
+                    }
+                }
+                return result;
             }
             else
                 return "";
@@ -262,6 +361,16 @@ namespace HRG_LinqLibrary
 
         //无参形式的存储过程，一般来说应该是查询存储过程
         public string QueryProc(string procName)
+        {
+            return QueryProc(procName, "");
+        }
+
+        public string Query(object queryObj)
+        {
+            throw new Exception("ERROR,Query not finished!");
+        }
+
+        public string QueryProc(string procName, string argumentJson)
         {
             try
             {
@@ -272,7 +381,7 @@ namespace HRG_LinqLibrary
                 //创建数据库命令,通过procName取出实际的proc命令
                 OleDbCommand command = _conn.CreateCommand();
 
-                command.CommandText = GetProcText(procName);
+                command.CommandText = GetProcText(procName,argumentJson);
                 //从数据库中读取数据流存入reader中
                 OleDbDataReader reader = command.ExecuteReader();
 
@@ -310,31 +419,75 @@ namespace HRG_LinqLibrary
             }
         }
 
-        public string Query(object queryObj)
+
+        public int Delete(string deleteString)
         {
-            throw new Exception("ERROR,Query not finished!");
+            try
+            {
+                OleDbCommand cmd = _conn.CreateCommand();
+                cmd.CommandText = deleteString;
+                cmd.CommandType = CommandType.Text;
+                cmd.Parameters.Clear();
+                return cmd.ExecuteNonQuery();
+
+            }
+            catch
+            {
+
+                throw new Exception(String.Format("ERROR, OLEDB delete error while do command: {0}", deleteString));
+            }
+            finally
+            {
+                //do nothing yet;
+
+            }
         }
 
-        public string QueryProc(string procName, string argumentJson)
+        public int Update(string updateString)
         {
-            throw new Exception("ERROR, QueryProc not finished!");
+            try
+            {
+                OleDbCommand cmd = _conn.CreateCommand();
+                cmd.CommandText = updateString;
+                cmd.CommandType = CommandType.Text;
+                cmd.Parameters.Clear();
+                return cmd.ExecuteNonQuery();
+
+            }
+            catch
+            {
+
+                throw new Exception(String.Format("ERROR, OLEDB update error while do command: {0}", updateString));
+            }
+            finally
+            {
+                //do nothing yet;
+
+            }
         }
 
-
-        public string Delete(string deleteString)
+        //执行插入语句，成功返回插入条数（0表示成功插入0条），失败返回-1
+        public int Insert(string insertString)
         {
-            throw new Exception("ERROR, Delete not finished!");
-        }
+            try
+            {
+                OleDbCommand cmd = _conn.CreateCommand();
+                cmd.CommandText = insertString;
+                cmd.CommandType = CommandType.Text;
+                cmd.Parameters.Clear();
+                return cmd.ExecuteNonQuery();
 
-        public string Update(string deleteString)
-        {
-            throw new Exception("ERROR, Update not finished!");
-        }
+            }
+            catch
+            {
 
-        public string Insert(string insertString)
-        {
-            throw new Exception("ERROR, Insert not finished!");
+                throw new Exception(String.Format("ERROR, OLEDB insert error while do command: {0}", insertString));
+            }
+            finally
+            {
+                //do nothing yet;
 
+            }
         }
         private OleDbConnection _conn;
     }
