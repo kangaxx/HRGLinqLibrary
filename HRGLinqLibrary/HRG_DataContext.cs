@@ -374,7 +374,7 @@ namespace HRG_LinqLibrary
         {
             try
             {
-                if (procName.IndexOf("SEARCH") < 0)
+                if (procName.IndexOf("SEARCH") < 0 && procName.IndexOf("INSERT") < 0 && procName.IndexOf("UPDATE") < 0)
                     throw new Exception("ERROR, QueryProc name invalid!");
 
                 #region 读取数据
@@ -411,7 +411,7 @@ namespace HRG_LinqLibrary
             }
             catch
             {
-                throw new Exception(String.Format("ERROR, Mysql DataContext error while do QueryProc: {0}", procName));
+                throw new Exception(String.Format("ERROR, OleDB DataContext error while do QueryProc: {0}", procName));
             }
             finally
             {
@@ -434,7 +434,7 @@ namespace HRG_LinqLibrary
             catch
             {
 
-                throw new Exception(String.Format("ERROR, OLEDB delete error while do command: {0}", deleteString));
+                throw new Exception(String.Format("ERROR, OleDB delete error while do command: {0}", deleteString));
             }
             finally
             {
@@ -457,7 +457,7 @@ namespace HRG_LinqLibrary
             catch
             {
 
-                throw new Exception(String.Format("ERROR, OLEDB update error while do command: {0}", updateString));
+                throw new Exception(String.Format("ERROR, OleDB update error while do command: {0}", updateString));
             }
             finally
             {
@@ -481,7 +481,7 @@ namespace HRG_LinqLibrary
             catch
             {
 
-                throw new Exception(String.Format("ERROR, OLEDB insert error while do command: {0}", insertString));
+                throw new Exception(String.Format("ERROR, OleDB insert error while do command: {0}", insertString));
             }
             finally
             {

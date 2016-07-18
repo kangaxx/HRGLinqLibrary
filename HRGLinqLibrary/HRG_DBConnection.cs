@@ -71,12 +71,20 @@ namespace HRG_LinqLibrary
 
         public HRG_DBFactory(string configFile)
         {
-            FileStream fs = new FileStream(configFile, FileMode.Open);
-            StreamReader sr = new StreamReader(fs);
-            string configuration = sr.ReadToEnd();
-            _conn = GetDatabaseConn(configuration);
-            _conn.Open();
-            fs.Close();
+            string configuration = "";
+            try
+            {
+                FileStream fs = new FileStream(configFile, FileMode.Open);
+                StreamReader sr = new StreamReader(fs);
+                configuration = SecurityHelper.DecryptDBConn(sr.ReadToEnd());
+                _conn = GetDatabaseConn(configuration);
+                _conn.Open();
+                fs.Close();
+            }
+            catch(Exception e)
+            {
+                throw new Exception(String.Format("Error, get DBConnect string in file {0} : {1} , cause by {2}",configFile, configuration,e));
+            }
         }
 
         
