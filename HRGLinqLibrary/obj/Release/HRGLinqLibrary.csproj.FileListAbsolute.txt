@@ -6,3 +6,6 @@ E:\code\vs2012\HRGLinqLibrary\HRGLinqLibrary\bin\Release\HRG_Base_2012.dll
 E:\code\vs2012\HRGLinqLibrary\HRGLinqLibrary\bin\Release\Newtonsoft.Json.dll
 E:\code\vs2012\HRGLinqLibrary\HRGLinqLibrary\bin\Release\HRG_Base_2012.pdb
 E:\code\vs2012\HRGLinqLibrary\HRGLinqLibrary\bin\Release\Newtonsoft.Json.xml
+E:\code\vs2012\HRGLinqLibrary\HRGLinqLibrary\bin\Release\log4net.dll
+E:\code\vs2012\HRGLinqLibrary\HRGLinqLibrary\bin\Release\log4net.xml
+E:\code\vs2012\HRGLinqLibrary\HRGLinqLibrary\obj\Release\HRGLinqLibrary.csprojResolveAssemblyReference.cache

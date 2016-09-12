@@ -27,7 +27,7 @@ using System.IO;
 
 namespace HRG_LinqLibrary
 {
-
+    
     //虚拟工厂模式的数据库工厂类，根据传入的参数决定链接那个数据库
     public class HRG_DBFactory : IDisposable
     {
@@ -37,6 +37,8 @@ namespace HRG_LinqLibrary
             {
                 throw new Exception(String.Format("Error , connection {0} is already opened !", conn.ConnectionString));
             }
+            GlobalVariables.LOG_MANAGER = log4net.LogManager.GetLogger("database log");
+
             _conn = conn;
             _conn.Open();
         }
@@ -68,17 +70,18 @@ namespace HRG_LinqLibrary
 
         }
 
-
+        //创建工厂
         public HRG_DBFactory(string configFile)
         {
             string configuration = "";
             try
             {
-                FileStream fs = new FileStream(configFile, FileMode.Open);
+                FileStream fs = new FileStream(configFile, FileMode.Open, FileAccess.Read, FileShare.Read);  //以共享模式打开文件
                 StreamReader sr = new StreamReader(fs);
                 configuration = SecurityHelper.DecryptDBConn(sr.ReadToEnd());
                 _conn = GetDatabaseConn(configuration);
                 _conn.Open();
+                GlobalVariables.LOG_MANAGER = log4net.LogManager.GetLogger("database log");
                 fs.Close();
             }
             catch(Exception e)
@@ -116,7 +119,6 @@ namespace HRG_LinqLibrary
         {
             if (_conn.State == ConnectionState.Open)
                 _conn.Close();
-            Console.WriteLine("conn closed!");
         }
 
         private IDbConnection _conn;

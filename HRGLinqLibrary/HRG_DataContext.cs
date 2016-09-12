@@ -70,9 +70,12 @@ namespace HRG_LinqLibrary
         {
             if (conn.State != ConnectionState.Open)
             {
+                GlobalVariables.LOG_MANAGER.Error("error", new Exception("创建mysql链接出错"));
                 throw new Exception("ERROR, DataContext construct failed !");
             }
+            
             _conn = (MySqlConnection)conn;
+            GlobalVariables.LOG_MANAGER.Info("创建mysql链接 [" + _conn.DataSource + "] 成功");
         }
 
         public IDataReader obj_Query(string queryString)
@@ -280,9 +283,11 @@ namespace HRG_LinqLibrary
         {
             if (conn.State != ConnectionState.Open)
             {
+                GlobalVariables.LOG_MANAGER.Error("error", new Exception("创建oledb链接出错"));
                 throw new Exception("ERROR, DataContext construct failed !");
             }
             _conn = (OleDbConnection)conn;
+            GlobalVariables.LOG_MANAGER.Info("创建oledb链接[" + _conn.DataSource + "]成功");
         }
 
         //执行select查询语句
@@ -325,7 +330,7 @@ namespace HRG_LinqLibrary
             OleDbDataReader reader = command.ExecuteReader();
 
             if (!reader.HasRows)
-                return null; //一条数据都没有直接返回空字符串
+                return null; //一条数据都没有直接返回空
             else
                 return reader;
 

@@ -3,6 +3,8 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HRGLinqLibrary", "HRGLinqLibrary\HRGLinqLibrary.csproj", "{62184B5D-F691-41CA-AC6F-0A271F597E67}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Linq_UT", "..\Demo\Linq_UT_Proj\Linq_UT\Linq_UT.csproj", "{F2F8D6CC-2A03-4653-A9EA-1AC86805396B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -13,6 +15,10 @@ Global
 		{62184B5D-F691-41CA-AC6F-0A271F597E67}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{62184B5D-F691-41CA-AC6F-0A271F597E67}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{62184B5D-F691-41CA-AC6F-0A271F597E67}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F2F8D6CC-2A03-4653-A9EA-1AC86805396B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F2F8D6CC-2A03-4653-A9EA-1AC86805396B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F2F8D6CC-2A03-4653-A9EA-1AC86805396B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F2F8D6CC-2A03-4653-A9EA-1AC86805396B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
